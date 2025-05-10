@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "679497502497",
+    "project_id": "expand-fa561",
+    "storage_bucket": "expand-fa561.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:679497502497:android:b9d93ce0dd600a1df67860",
+        "android_client_info": {
+          "package_name": "com.example.expand"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDGEIPGLDcW6L_ECkD1F3bFvGPwG94_aYM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

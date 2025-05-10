@@ -1,0 +1,17 @@
+dependencies {
+    implementation platform('com.google.firebase:firebase-bom:32.7.0')
+    implementation 'com.google.firebase:firebase-auth'
+    // ...
+}
+
+apply plugin: 'com.google.gms.google-services'  
+
+
+above in the android app build.kts
+
+
+
+
+
+git remote add origin https://github.com/AaditAntony/expand.git
+git push -u origin main
