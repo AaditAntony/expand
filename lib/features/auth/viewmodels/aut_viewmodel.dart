@@ -1,4 +1,4 @@
-import 'package:expand/repositories/auth_repositories.dart';
+import 'package:expand/features/auth/repositories/auth_repositories.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
