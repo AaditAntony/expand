@@ -37,6 +37,16 @@ class LoginScreen extends ConsumerWidget {
                             ref.read(authViewModelProvider.notifier).signOut(),
                     child: const Text('Sign out'),
                   ),
+                  // moving to the product screen
+                  TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => LoginScreen()),
+                      );
+                    },
+                    child: Text("view product"),
+                  ),
                 ],
               );
             }
