@@ -1,4 +1,5 @@
 import 'package:expand/features/auth/viewmodels/aut_viewmodel.dart';
+import 'package:expand/lean_riverpod/post_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -42,7 +43,7 @@ class LoginScreen extends ConsumerWidget {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => LoginScreen()),
+                        MaterialPageRoute(builder: (context) => PostScreen()),
                       );
                     },
                     child: Text("view product"),
