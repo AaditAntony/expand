@@ -1,29 +1,29 @@
 // To parse this JSON data, do
 //
-//     final dataModel = dataModelFromJson(jsonString);
+//     final proModel = proModelFromJson(jsonString);
 
 // ignore_for_file: constant_identifier_names
 
 import 'dart:convert';
 
-DataModel dataModelFromJson(String str) => DataModel.fromJson(json.decode(str));
+ProModel proModelFromJson(String str) => ProModel.fromJson(json.decode(str));
 
-String dataModelToJson(DataModel data) => json.encode(data.toJson());
+String proModelToJson(ProModel data) => json.encode(data.toJson());
 
-class DataModel {
+class ProModel {
   List<Product> products;
   int total;
   int skip;
   int limit;
 
-  DataModel({
+  ProModel({
     required this.products,
     required this.total,
     required this.skip,
     required this.limit,
   });
 
-  factory DataModel.fromJson(Map<String, dynamic> json) => DataModel(
+  factory ProModel.fromJson(Map<String, dynamic> json) => ProModel(
     products: List<Product>.from(
       json["products"].map((x) => Product.fromJson(x)),
     ),

@@ -1,5 +1,5 @@
+import 'package:expand/features/Product/pro_screen.dart';
 import 'package:expand/features/auth/viewmodels/aut_viewmodel.dart';
-import 'package:expand/lean_riverpod/post_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -30,7 +30,7 @@ class LoginScreen extends ConsumerWidget {
               return Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text('Logged in as: ${user.email}'),
+                  Text('Logged in as: ${user.displayName}'),
                   const SizedBox(height: 20),
                   ElevatedButton(
                     onPressed:
@@ -43,7 +43,7 @@ class LoginScreen extends ConsumerWidget {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => PostScreen()),
+                        MaterialPageRoute(builder: (context) => ProScreen()),
                       );
                     },
                     child: Text("view product"),

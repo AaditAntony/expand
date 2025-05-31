@@ -1,6 +1,6 @@
-import 'package:expand/product%20section/data/ProductException.dart';
-import 'package:expand/product%20section/data/productModel.dart';
-import 'package:expand/product%20section/data/productRepository.dart';
+import 'package:expand/product%20section/data/product_exception.dart';
+import 'package:expand/product%20section/data/product_model.dart';
+import 'package:expand/product%20section/data/product_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class ProductState {

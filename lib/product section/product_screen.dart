@@ -1,4 +1,4 @@
-import 'package:expand/product%20section/productViewModel.dart';
+import 'package:expand/product%20section/product_view_model.dart';
 import 'package:expand/product%20section/provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

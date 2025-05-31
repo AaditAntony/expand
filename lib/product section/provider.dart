@@ -1,6 +1,6 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:expand/product%20section/data/productRepository.dart';
-import 'package:expand/product%20section/productViewModel.dart';
+import 'package:expand/product%20section/data/product_repository.dart';
+import 'package:expand/product%20section/product_view_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 

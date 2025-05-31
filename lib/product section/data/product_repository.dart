@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:expand/product%20section/data/ProductException.dart';
-import 'package:expand/product%20section/data/productModel.dart';
+import 'package:expand/product%20section/data/product_exception.dart';
+import 'package:expand/product%20section/data/product_model.dart';
 import 'package:http/http.dart' as http;
 
 class ProductRepository {
