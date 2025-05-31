@@ -1,8 +1,6 @@
 import 'dart:convert';
-
 import 'package:expand/features/Product/pro_exception.dart';
 import 'package:expand/features/Product/pro_model.dart';
-import 'package:expand/product%20section/data/product_exception.dart';
 import 'package:http/http.dart' as http;
 
 class ProRepository {
@@ -20,8 +18,8 @@ class ProRepository {
     } on http.ClientException catch (e) {
       throw ProNetworkApi(e.message);
     } catch (e) {
-      ProductUnknownException(e.toString());
+      ProUnknownException(e.toString());
     }
-    throw ProductUnknownException("this is an unexpect error");
+    throw ProUnknownException("this is an unexpect error");
   }
 }
