@@ -171,35 +171,50 @@ Future<File> generateTransportBill({
                 ),
               ],
             ),
-            pw.SizedBox(height: 40),
+            pw.SizedBox(height: 20),
 
             // Footer with driver name and signature
-            pw.Row(
-              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-              children: [
-                pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
-                  children: [
-                    pw.Text(
-                      'Driver Name:',
-                      style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+            pw.Container(
+              decoration: pw.BoxDecoration(border: pw.Border.all()),
+              padding: const pw.EdgeInsets.all(10),
+              child: pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  // Driver Name (Left)
+                  pw.Container(
+                    width: 200,
+                    height: 100,
+                    child: pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
+                        pw.Text(
+                          'Driver Name:',
+                          style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                        ),
+                        pw.SizedBox(height: 10),
+                        pw.Text(driverName),
+                      ],
                     ),
-                    pw.Text(driverName),
-                  ],
-                ),
-                pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.end,
-                  children: [
-                    pw.Text(
-                      'SUIE JAMES',
-                      style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                  ),
+                  // Signature (Right)
+                  pw.Container(
+                    width: 200,
+                    height: 100,
+                    child: pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.end,
+                      children: [
+                        pw.Text(
+                          'SUIE JAMES',
+                          style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                        ),
+                        pw.SizedBox(height: 70),
+
+                        pw.Text('Signature'),
+                      ],
                     ),
-                    pw.SizedBox(height: 30),
-                    pw.Text('_________________________'),
-                    pw.Text('Signature'),
-                  ],
-                ),
-              ],
+                  ),
+                ],
+              ),
             ),
           ],
         );
