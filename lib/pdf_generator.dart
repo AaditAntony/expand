@@ -53,13 +53,13 @@ Future<File> generateTransportBill({
                 pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.end,
                   children: [
-                    pw.Text(
-                      'SUIE JAMES',
-                      style: pw.TextStyle(
-                        fontSize: 14,
-                        fontWeight: pw.FontWeight.bold,
-                      ),
-                    ),
+                    // pw.Text(
+                    //   'SUIE JAMES',
+                    //   style: pw.TextStyle(
+                    //     fontSize: 14,
+                    //     fontWeight: pw.FontWeight.bold,
+                    //   ),
+                    // ),
                     pw.Text('A/c No: 1515100029173'),
                     pw.Text('HDFC Bank, Palluruthy Br.'),
                     pw.Text('IFSC code HDFC0001515'),
@@ -151,7 +151,7 @@ Future<File> generateTransportBill({
               children: [
                 _buildDetailRow('CONTAINER No.', containerNumber),
                 _buildDetailRow('UNLOADING CHARGE', unloadingCharge),
-                _buildDetailRow('20/40 SINGLE/DOUBLE AXLE', axleType),
+                _buildDetailRow('20/40', axleType),
                 _buildDetailRow('DESTINATION', destination),
                 _buildDetailRow('HIRE', hireCharge),
                 _buildDetailRow('TOLL', tollCharge),

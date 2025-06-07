@@ -13,6 +13,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Transport Bill',
       theme: ThemeData(primarySwatch: Colors.blue),
+      debugShowCheckedModeBanner: false,
       home: const TransportBillForm(),
     );
   }
@@ -111,12 +112,7 @@ class _TransportBillFormState extends State<TransportBillForm> {
                 'UNLOADING CHARGE',
                 isNumber: true,
               ),
-              _buildDropdownField(_axleController, '20/40 SINGLE/DOUBLE AXLE', [
-                '20 SINGLE AXLE',
-                '40 SINGLE AXLE',
-                '20 DOUBLE AXLE',
-                '40 DOUBLE AXLE',
-              ]),
+              _buildDropdownField(_axleController, '20/40 ', ['20 ', '40 ']),
               _buildTextFormField(_destinationController, 'DESTINATION'),
               _buildTextFormField(_hireController, 'HIRE', isNumber: true),
               _buildTextFormField(_tollController, 'TOLL', isNumber: true),
