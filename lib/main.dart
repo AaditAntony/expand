@@ -1,9 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'pdf_generator.dart';
 import 'preview_screen.dart';
+import 'search_screen.dart';
+import 'firebase_service.dart';
 
-void main() => runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  runApp(const MyApp());
+}
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -15,6 +22,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(primarySwatch: Colors.blue),
       debugShowCheckedModeBanner: false,
       home: const TransportBillForm(),
+      routes: {'/search': (context) => const SearchScreen()},
     );
   }
 }
@@ -71,7 +79,20 @@ class _TransportBillFormState extends State<TransportBillForm> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Transport Bill')),
+      appBar: AppBar(
+        title: const Text('Transport Bill'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.search),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const SearchScreen()),
+              );
+            },
+          ),
+        ],
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Form(
@@ -227,12 +248,69 @@ class _TransportBillFormState extends State<TransportBillForm> {
         driverName: _driverController.text,
       );
 
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => PreviewScreen(pdfFile: pdfFile),
-        ),
-      );
+      // Create bill data map
+      final billData = {
+        'invoiceNumber': _invoiceController.text,
+        'date': _dateController.text,
+        'truckNumber': _truckController.text,
+        'recipientName': _recipientController.text,
+        'containerNumber': _containerController.text,
+        'unloadingCharge': _unloadingController.text,
+        'axleType': _axleController.text,
+        'destination': _destinationController.text,
+        'hireCharge': _hireController.text,
+        'tollCharge': _tollController.text,
+        'weighingCharge': _weighingController.text,
+        'haltingCharge': _haltingController.text,
+        'advanceAmount': _advanceController.text,
+        'driverName': _driverController.text,
+        'totalAmount':
+            _calculateTotal(
+              _unloadingController.text,
+              _hireController.text,
+              _tollController.text,
+              _weighingController.text,
+              _haltingController.text,
+              _advanceController.text,
+            ).toString(),
+      };
+
+      // Save to Firebase
+      try {
+        final firebaseService = FirebaseService();
+        await firebaseService.saveTransportBill(
+          billData: billData,
+          pdfFile: pdfFile,
+        );
+
+        // Navigate to preview screen
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PreviewScreen(pdfFile: pdfFile),
+          ),
+        );
+      } catch (e) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error saving to Firebase: $e')));
+      }
     }
+  }
+
+  double _calculateTotal(
+    String unloading,
+    String hire,
+    String toll,
+    String weighing,
+    String halting,
+    String advance,
+  ) {
+    return (double.tryParse(unloading) ?? 0) +
+        (double.tryParse(hire) ?? 0) +
+        (double.tryParse(toll) ?? 0) +
+        (double.tryParse(weighing) ?? 0) +
+        (double.tryParse(halting) ?? 0) -
+        (double.tryParse(advance) ?? 0);
   }
 }
