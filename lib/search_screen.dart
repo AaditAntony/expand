@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'firebase_service.dart';
 
 class SearchScreen extends StatefulWidget {
@@ -13,6 +14,7 @@ class SearchScreen extends StatefulWidget {
 class _SearchScreenState extends State<SearchScreen> {
   final TextEditingController _searchController = TextEditingController();
   final FirebaseService _firebaseService = FirebaseService();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
   List<QueryDocumentSnapshot> _searchResults = [];
   bool _isLoading = false;
 
@@ -27,6 +29,10 @@ class _SearchScreenState extends State<SearchScreen> {
 
     setState(() => _isLoading = true);
     try {
+      if (_auth.currentUser == null) {
+        throw Exception('User not authenticated');
+      }
+
       final results = await _firebaseService.searchBillsByConsignee(
         _searchController.text.trim(),
       );
@@ -45,7 +51,18 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Search Bills')),
+      appBar: AppBar(
+        title: const Text('Search Bills'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () async {
+              await _firebaseService.signOut();
+              Navigator.pushReplacementNamed(context, '/');
+            },
+          ),
+        ],
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -95,12 +112,11 @@ class _SearchScreenState extends State<SearchScreen> {
                             },
                           ),
                           onTap: () {
-                            // Show more details in a dialog
                             showDialog(
                               context: context,
                               builder:
                                   (context) => AlertDialog(
-                                    title: Text('Bill Details'),
+                                    title: const Text('Bill Details'),
                                     content: SingleChildScrollView(
                                       child: Column(
                                         crossAxisAlignment:
@@ -141,7 +157,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                     actions: [
                                       TextButton(
                                         onPressed: () => Navigator.pop(context),
-                                        child: Text('Close'),
+                                        child: const Text('Close'),
                                       ),
                                     ],
                                   ),
@@ -163,7 +179,7 @@ class _SearchScreenState extends State<SearchScreen> {
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
-          Text('$label: ', style: TextStyle(fontWeight: FontWeight.bold)),
+          Text('$label: ', style: const TextStyle(fontWeight: FontWeight.bold)),
           Text(value),
         ],
       ),

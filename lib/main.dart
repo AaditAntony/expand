@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'pdf_generator.dart';
 import 'preview_screen.dart';
 import 'search_screen.dart';
@@ -21,12 +22,65 @@ class MyApp extends StatelessWidget {
       title: 'Transport Bill',
       theme: ThemeData(primarySwatch: Colors.blue),
       debugShowCheckedModeBanner: false,
-      home: const TransportBillForm(),
-      routes: {'/search': (context) => const SearchScreen()},
+      home: const AuthWrapper(),
+      routes: {
+        '/search': (context) => const SearchScreen(),
+        '/home': (context) => const TransportBillForm(),
+      },
     );
   }
 }
 
+class AuthWrapper extends StatelessWidget {
+  const AuthWrapper({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<User?>(
+      stream: FirebaseAuth.instance.authStateChanges(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.active) {
+          final user = snapshot.data;
+          if (user != null) {
+            return const TransportBillForm();
+          }
+          return const LoginScreen();
+        }
+        return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      },
+    );
+  }
+}
+
+class LoginScreen extends StatelessWidget {
+  const LoginScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final firebaseService = FirebaseService();
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('Login')),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: () async {
+            try {
+              await firebaseService.signInWithGoogle();
+              Navigator.pushReplacementNamed(context, '/home');
+            } catch (e) {
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text('Login failed: $e')));
+            }
+          },
+          child: const Text('Sign in with Google'),
+        ),
+      ),
+    );
+  }
+}
+
+// Rest of your TransportBillForm code remains the same...
 class TransportBillForm extends StatefulWidget {
   const TransportBillForm({super.key});
 
