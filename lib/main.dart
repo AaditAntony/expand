@@ -80,7 +80,6 @@ class LoginScreen extends StatelessWidget {
   }
 }
 
-// Rest of your TransportBillForm code remains the same...
 class TransportBillForm extends StatefulWidget {
   const TransportBillForm({super.key});
 
@@ -104,6 +103,7 @@ class _TransportBillFormState extends State<TransportBillForm> {
   final _haltingController = TextEditingController();
   final _advanceController = TextEditingController();
   final _driverController = TextEditingController();
+  bool _isGenerating = false;
 
   @override
   void initState() {
@@ -214,8 +214,11 @@ class _TransportBillFormState extends State<TransportBillForm> {
               // Generate Button
               const SizedBox(height: 20),
               ElevatedButton(
-                onPressed: _generatePdf,
-                child: const Text('Generate Transport Bill'),
+                onPressed: _isGenerating ? null : _generatePdf,
+                child:
+                    _isGenerating
+                        ? const CircularProgressIndicator()
+                        : const Text('Generate Transport Bill'),
               ),
             ],
           ),
@@ -285,69 +288,79 @@ class _TransportBillFormState extends State<TransportBillForm> {
 
   Future<void> _generatePdf() async {
     if (_formKey.currentState!.validate()) {
-      final pdfFile = await generateTransportBill(
-        invoiceNumber: _invoiceController.text,
-        date: _dateController.text,
-        truckNumber: _truckController.text,
-        recipientName: _recipientController.text,
-        containerNumber: _containerController.text,
-        unloadingCharge: _unloadingController.text,
-        axleType: _axleController.text,
-        destination: _destinationController.text,
-        hireCharge: _hireController.text,
-        tollCharge: _tollController.text,
-        weighingCharge: _weighingController.text,
-        haltingCharge: _haltingController.text,
-        advanceAmount: _advanceController.text,
-        driverName: _driverController.text,
-      );
-
-      // Create bill data map
-      final billData = {
-        'invoiceNumber': _invoiceController.text,
-        'date': _dateController.text,
-        'truckNumber': _truckController.text,
-        'recipientName': _recipientController.text,
-        'containerNumber': _containerController.text,
-        'unloadingCharge': _unloadingController.text,
-        'axleType': _axleController.text,
-        'destination': _destinationController.text,
-        'hireCharge': _hireController.text,
-        'tollCharge': _tollController.text,
-        'weighingCharge': _weighingController.text,
-        'haltingCharge': _haltingController.text,
-        'advanceAmount': _advanceController.text,
-        'driverName': _driverController.text,
-        'totalAmount':
-            _calculateTotal(
-              _unloadingController.text,
-              _hireController.text,
-              _tollController.text,
-              _weighingController.text,
-              _haltingController.text,
-              _advanceController.text,
-            ).toString(),
-      };
-
-      // Save to Firebase
+      setState(() => _isGenerating = true);
       try {
+        final pdfFile = await generateTransportBill(
+          invoiceNumber: _invoiceController.text,
+          date: _dateController.text,
+          truckNumber: _truckController.text,
+          recipientName: _recipientController.text,
+          containerNumber: _containerController.text,
+          unloadingCharge: _unloadingController.text,
+          axleType: _axleController.text,
+          destination: _destinationController.text,
+          hireCharge: _hireController.text,
+          tollCharge: _tollController.text,
+          weighingCharge: _weighingController.text,
+          haltingCharge: _haltingController.text,
+          advanceAmount: _advanceController.text,
+          driverName: _driverController.text,
+        );
+
+        // Create bill data map
+        final billData = {
+          'invoiceNumber': _invoiceController.text,
+          'date': _dateController.text,
+          'truckNumber': _truckController.text,
+          'recipientName': _recipientController.text,
+          'containerNumber': _containerController.text,
+          'unloadingCharge': _unloadingController.text,
+          'axleType': _axleController.text,
+          'destination': _destinationController.text,
+          'hireCharge': _hireController.text,
+          'tollCharge': _tollController.text,
+          'weighingCharge': _weighingController.text,
+          'haltingCharge': _haltingController.text,
+          'advanceAmount': _advanceController.text,
+          'driverName': _driverController.text,
+          'totalAmount':
+              _calculateTotal(
+                _unloadingController.text,
+                _hireController.text,
+                _tollController.text,
+                _weighingController.text,
+                _haltingController.text,
+                _advanceController.text,
+              ).toString(),
+        };
+
+        // Save to Firebase
         final firebaseService = FirebaseService();
-        await firebaseService.saveTransportBill(
+        final pdfUrl = await firebaseService.saveTransportBill(
           billData: billData,
           pdfFile: pdfFile,
         );
 
+        // Check if widget is still mounted before navigation
+        if (!mounted) return;
+
         // Navigate to preview screen
-        Navigator.push(
+        await Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => PreviewScreen(pdfFile: pdfFile),
+            builder:
+                (context) => PreviewScreen(pdfFile: pdfFile, pdfUrl: pdfUrl),
           ),
         );
       } catch (e) {
+        if (!mounted) return;
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Error saving to Firebase: $e')));
+        ).showSnackBar(SnackBar(content: Text('Error generating bill: $e')));
+      } finally {
+        if (mounted) {
+          setState(() => _isGenerating = false);
+        }
       }
     }
   }

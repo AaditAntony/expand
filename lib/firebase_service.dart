@@ -48,7 +48,8 @@ class FirebaseService {
   }
 
   // Save transport bill to Firestore and upload PDF to Storage
-  Future<void> saveTransportBill({
+  Future<String> saveTransportBill({
+    // Changed return type to String
     required Map<String, dynamic> billData,
     required File pdfFile,
   }) async {
@@ -63,7 +64,7 @@ class FirebaseService {
         'transport_bills/${_auth.currentUser!.uid}/${DateTime.now().millisecondsSinceEpoch}.pdf',
       );
       await pdfRef.putFile(pdfFile);
-      final pdfUrl = await pdfRef.getDownloadURL();
+      final pdfUrl = await pdfRef.getDownloadURL(); // Get the download URL
 
       // Save data to Firestore with PDF URL and user ID
       await _firestore.collection('transport_bills').add({
@@ -72,6 +73,8 @@ class FirebaseService {
         'userId': _auth.currentUser!.uid,
         'createdAt': FieldValue.serverTimestamp(),
       });
+
+      return pdfUrl; // Return the download URL
     } catch (e) {
       throw Exception('Failed to save bill: $e');
     }

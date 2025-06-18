@@ -1,8 +1,14 @@
+import 'dart:io';
+
+import 'package:expand/firebase_service.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:url_launcher/url_launcher.dart';
+
 import 'package:firebase_auth/firebase_auth.dart';
-import 'firebase_service.dart';
+
+import 'package:dio/dio.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:open_file/open_file.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -15,12 +21,15 @@ class _SearchScreenState extends State<SearchScreen> {
   final TextEditingController _searchController = TextEditingController();
   final FirebaseService _firebaseService = FirebaseService();
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final Dio _dio = Dio();
   List<QueryDocumentSnapshot> _searchResults = [];
   bool _isLoading = false;
+  bool _isDownloading = false;
 
   @override
   void dispose() {
     _searchController.dispose();
+    _dio.close();
     super.dispose();
   }
 
@@ -45,6 +54,38 @@ class _SearchScreenState extends State<SearchScreen> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Error searching: $e')));
+    }
+  }
+
+  Future<void> _downloadAndOpenPdf(String pdfUrl) async {
+    setState(() => _isDownloading = true);
+    try {
+      final dir = await getApplicationDocumentsDirectory();
+      final file = File(
+        '${dir.path}/transport_bill_${DateTime.now().millisecondsSinceEpoch}.pdf',
+      );
+
+      await _dio.download(
+        pdfUrl,
+        file.path,
+        onReceiveProgress: (received, total) {
+          if (total != -1) {
+            print('${(received / total * 100).toStringAsFixed(0)}%');
+          }
+        },
+      );
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('PDF downloaded successfully')),
+      );
+
+      await OpenFile.open(file.path);
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Download failed: $e')));
+    } finally {
+      setState(() => _isDownloading = false);
     }
   }
 
@@ -102,15 +143,15 @@ class _SearchScreenState extends State<SearchScreen> {
                               Text('Total: ₹${bill['totalAmount']}'),
                             ],
                           ),
-                          trailing: IconButton(
-                            icon: const Icon(Icons.open_in_new),
-                            onPressed: () async {
-                              final url = bill['pdfUrl'];
-                              if (await canLaunchUrl(Uri.parse(url))) {
-                                await launchUrl(Uri.parse(url));
-                              }
-                            },
-                          ),
+                          trailing:
+                              _isDownloading
+                                  ? const CircularProgressIndicator()
+                                  : IconButton(
+                                    icon: const Icon(Icons.download),
+                                    onPressed:
+                                        () =>
+                                            _downloadAndOpenPdf(bill['pdfUrl']),
+                                  ),
                           onTap: () {
                             showDialog(
                               context: context,
