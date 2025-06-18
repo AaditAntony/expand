@@ -140,7 +140,9 @@ class _SearchScreenState extends State<SearchScreen> {
                               Text('Invoice: ${bill['invoiceNumber']}'),
                               Text('Truck: ${bill['truckNumber']}'),
                               Text('Date: ${bill['date']}'),
+                              Text('advance: ₹${bill['advance']}'),
                               Text('Total: ₹${bill['totalAmount']}'),
+                              Text('Advance: ₹${bill['advanceAmount']}'),
                             ],
                           ),
                           trailing:
@@ -187,6 +189,10 @@ class _SearchScreenState extends State<SearchScreen> {
                                           _buildDetailRow(
                                             'Toll Charge',
                                             '₹${bill['tollCharge']}',
+                                          ),
+                                          _buildDetailRow(
+                                            "Advanced Amount",
+                                            '₹${bill['advanceAmount']}',
                                           ),
                                           _buildDetailRow(
                                             'Total Amount',

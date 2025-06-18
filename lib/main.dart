@@ -352,6 +352,22 @@ class _TransportBillFormState extends State<TransportBillForm> {
                 (context) => PreviewScreen(pdfFile: pdfFile, pdfUrl: pdfUrl),
           ),
         );
+        // Clear the form after returning from PreviewScreen
+        _formKey.currentState?.reset();
+        _invoiceController.clear();
+        _dateController.text = DateFormat('dd/MM/yyyy').format(DateTime.now());
+        _truckController.clear();
+        _recipientController.clear();
+        _containerController.clear();
+        _unloadingController.clear();
+        _axleController.clear();
+        _destinationController.clear();
+        _hireController.clear();
+        _tollController.clear();
+        _weighingController.clear();
+        _haltingController.clear();
+        _advanceController.clear();
+        _driverController.clear();
       } catch (e) {
         if (!mounted) return;
         ScaffoldMessenger.of(
