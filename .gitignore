@@ -43,3 +43,19 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+
+# Firebase config files (Android & iOS)
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+
+# Firebase build artifacts
+android/build/
+ios/Pods/
+ios/Podfile.lock
+
+# Dart/Flutter build artifacts
+build/
+.dart_tool/
+.packages
+.pub-cache/
