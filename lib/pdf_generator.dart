@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'dart:io';
@@ -21,6 +22,12 @@ Future<File> generateTransportBill({
 }) async {
   final pdf = pw.Document();
   final now = DateTime.now();
+
+  final ByteData imageData = await rootBundle.load(
+    'assets/images/signature_1.png',
+  );
+  final Uint8List imageBytes = imageData.buffer.asUint8List();
+  final image = pw.MemoryImage(imageBytes);
 
   pdf.addPage(
     pw.Page(
@@ -221,8 +228,8 @@ Future<File> generateTransportBill({
                           'SUIE JAMES',
                           style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
                         ),
-                        pw.SizedBox(height: 70),
-
+                        pw.Image(image, width: 100, height: 50),
+                        // pw.SizedBox(height: 70),
                         pw.Text('Signature'),
                       ],
                     ),
