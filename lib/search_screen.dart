@@ -140,9 +140,11 @@ class _SearchScreenState extends State<SearchScreen> {
                               Text('Invoice: ${bill['invoiceNumber']}'),
                               Text('Truck: ${bill['truckNumber']}'),
                               Text('Date: ${bill['date']}'),
-                              Text('advance: ₹${bill['advance']}'),
+                              if (bill['advanceAmount'] != null &&
+                                  bill['advanceAmount'] != 0 &&
+                                  bill['advanceAmount'].toString().isNotEmpty)
+                                Text('Advance: ₹${bill['advanceAmount']}'),
                               Text('Total: ₹${bill['totalAmount']}'),
-                              Text('Advance: ₹${bill['advanceAmount']}'),
                             ],
                           ),
                           trailing:

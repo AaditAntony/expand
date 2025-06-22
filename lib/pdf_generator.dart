@@ -1,4 +1,5 @@
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'dart:io';
@@ -28,6 +29,10 @@ Future<File> generateTransportBill({
   );
   final Uint8List imageBytes = imageData.buffer.asUint8List();
   final image = pw.MemoryImage(imageBytes);
+  String formatWithCommas(String value) {
+    final number = int.tryParse(value) ?? 0;
+    return NumberFormat.decimalPattern().format(number);
+  }
 
   pdf.addPage(
     pw.Page(
@@ -172,24 +177,33 @@ Future<File> generateTransportBill({
               },
               children: [
                 _buildDetailRow('CONTAINER No.', containerNumber),
-                _buildDetailRow('UNLOADING CHARGE', unloadingCharge),
+                _buildDetailRow(
+                  'UNLOADING CHARGE',
+                  formatWithCommas(unloadingCharge),
+                ),
                 _buildDetailRow('20/40', axleType),
                 _buildDetailRow('DESTINATION', destination),
-                _buildDetailRow('HIRE', hireCharge, '/-'),
-                _buildDetailRow('TOLL', tollCharge),
-                _buildDetailRow('W. CHARGE', weighingCharge),
+                _buildDetailRow('HIRE', formatWithCommas(hireCharge), '/-'),
+                _buildDetailRow('TOLL', formatWithCommas(tollCharge)),
+                _buildDetailRow('W. CHARGE', formatWithCommas(weighingCharge)),
                 _buildDetailRow('HALTING CHARGE', haltingCharge, '/-'),
-                _buildDetailRow('ADVANCE', advanceAmount, '/-'),
+                _buildDetailRow(
+                  'ADVANCE',
+                  formatWithCommas(advanceAmount),
+                  '/-',
+                ),
                 _buildDetailRow(
                   'TOTAL AMOUNT',
-                  _calculateTotal(
-                    unloadingCharge,
-                    hireCharge,
-                    tollCharge,
-                    weighingCharge,
-                    haltingCharge,
-                    advanceAmount,
-                  ).toString(),
+                  formatWithCommas(
+                    _calculateTotal(
+                      unloadingCharge,
+                      hireCharge,
+                      tollCharge,
+                      weighingCharge,
+                      haltingCharge,
+                      advanceAmount,
+                    ).toString(),
+                  ),
                   '/-',
                 ),
               ],
@@ -254,6 +268,7 @@ Future<File> generateTransportBill({
 }
 
 pw.TableRow _buildDetailRow(String label, String value, [String? symbol]) {
+  final showValue = value.trim().isNotEmpty;
   return pw.TableRow(
     children: [
       pw.Padding(
@@ -265,7 +280,7 @@ pw.TableRow _buildDetailRow(String label, String value, [String? symbol]) {
       ),
       pw.Padding(
         padding: const pw.EdgeInsets.all(8),
-        child: pw.Text(value + (symbol ?? '')),
+        child: pw.Text(showValue ? value + (symbol ?? '') : ''),
       ),
     ],
   );
