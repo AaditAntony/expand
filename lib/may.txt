@@ -15,3 +15,9 @@ above in the android app build.kts
 
 git remote add origin https://github.com/AaditAntony/expand.git
 git push -u origin main
+
+
+
+Advance remove the bar if the value is not entered
+add coma in the digit if the digit is 4
+save in the file

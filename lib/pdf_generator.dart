@@ -49,6 +49,7 @@ Future<File> generateTransportBill({
                       style: pw.TextStyle(
                         fontSize: 14,
                         fontWeight: pw.FontWeight.bold,
+                        color: PdfColors.red,
                       ),
                     ),
                     pw.Text('House No. 10/1884, Kurisingal House'),
@@ -137,7 +138,7 @@ Future<File> generateTransportBill({
             // Recipient/Consignee
             pw.Row(
               children: [
-                pw.Text('To (Consignee Name):'),
+                pw.Text('To :'),
                 pw.SizedBox(width: 10),
                 pw.Text(
                   recipientName,
@@ -174,11 +175,11 @@ Future<File> generateTransportBill({
                 _buildDetailRow('UNLOADING CHARGE', unloadingCharge),
                 _buildDetailRow('20/40', axleType),
                 _buildDetailRow('DESTINATION', destination),
-                _buildDetailRow('HIRE', hireCharge),
+                _buildDetailRow('HIRE', hireCharge, '/-'),
                 _buildDetailRow('TOLL', tollCharge),
                 _buildDetailRow('W. CHARGE', weighingCharge),
-                _buildDetailRow('HALTING CHARGE', haltingCharge),
-                _buildDetailRow('ADVANCE', advanceAmount),
+                _buildDetailRow('HALTING CHARGE', haltingCharge, '/-'),
+                _buildDetailRow('ADVANCE', advanceAmount, '/-'),
                 _buildDetailRow(
                   'TOTAL AMOUNT',
                   _calculateTotal(
@@ -189,6 +190,7 @@ Future<File> generateTransportBill({
                     haltingCharge,
                     advanceAmount,
                   ).toString(),
+                  '/-',
                 ),
               ],
             ),
@@ -251,7 +253,7 @@ Future<File> generateTransportBill({
   return file;
 }
 
-pw.TableRow _buildDetailRow(String label, String value) {
+pw.TableRow _buildDetailRow(String label, String value, [String? symbol]) {
   return pw.TableRow(
     children: [
       pw.Padding(
@@ -261,12 +263,15 @@ pw.TableRow _buildDetailRow(String label, String value) {
           style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
         ),
       ),
-      pw.Padding(padding: const pw.EdgeInsets.all(8), child: pw.Text(value)),
+      pw.Padding(
+        padding: const pw.EdgeInsets.all(8),
+        child: pw.Text(value + (symbol ?? '')),
+      ),
     ],
   );
 }
 
-double _calculateTotal(
+int _calculateTotal(
   String unloading,
   String hire,
   String toll,
@@ -274,10 +279,10 @@ double _calculateTotal(
   String halting,
   String advance,
 ) {
-  return (double.tryParse(unloading) ?? 0) +
-      (double.tryParse(hire) ?? 0) +
-      (double.tryParse(toll) ?? 0) +
-      (double.tryParse(weighing) ?? 0) +
-      (double.tryParse(halting) ?? 0) -
-      (double.tryParse(advance) ?? 0);
+  return ((int.tryParse(unloading) ?? 0) +
+      (int.tryParse(hire) ?? 0) +
+      (int.tryParse(toll) ?? 0) +
+      (int.tryParse(weighing) ?? 0) +
+      (int.tryParse(halting) ?? 0) -
+      (int.tryParse(advance) ?? 0));
 }

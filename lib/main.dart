@@ -108,7 +108,7 @@ class _TransportBillFormState extends State<TransportBillForm> {
   @override
   void initState() {
     super.initState();
-    _dateController.text = DateFormat('dd/MM/yyyy').format(DateTime.now());
+    // _dateController.text = DateFormat('dd/MM/yyyy').format(DateTime.now());
   }
 
   @override
@@ -160,7 +160,7 @@ class _TransportBillFormState extends State<TransportBillForm> {
                 'SL.No',
                 isRequired: true,
               ),
-              _buildTextFormField(_dateController, 'Date', isReadOnly: true),
+              _buildTextFormField(_dateController, 'Date', isReadOnly: false),
               _buildTextFormField(
                 _truckController,
                 'Truck No.',
@@ -381,7 +381,7 @@ class _TransportBillFormState extends State<TransportBillForm> {
     }
   }
 
-  double _calculateTotal(
+  int _calculateTotal(
     String unloading,
     String hire,
     String toll,
@@ -389,11 +389,11 @@ class _TransportBillFormState extends State<TransportBillForm> {
     String halting,
     String advance,
   ) {
-    return (double.tryParse(unloading) ?? 0) +
-        (double.tryParse(hire) ?? 0) +
-        (double.tryParse(toll) ?? 0) +
-        (double.tryParse(weighing) ?? 0) +
-        (double.tryParse(halting) ?? 0) -
-        (double.tryParse(advance) ?? 0);
+    return (int.tryParse(unloading) ?? 0) +
+        (int.tryParse(hire) ?? 0) +
+        (int.tryParse(toll) ?? 0) +
+        (int.tryParse(weighing) ?? 0) +
+        (int.tryParse(halting) ?? 0) -
+        (int.tryParse(advance) ?? 0);
   }
 }
