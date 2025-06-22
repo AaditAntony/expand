@@ -9,6 +9,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:dio/dio.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:open_file/open_file.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -60,14 +61,47 @@ class _SearchScreenState extends State<SearchScreen> {
   Future<void> _downloadAndOpenPdf(String pdfUrl) async {
     setState(() => _isDownloading = true);
     try {
-      final dir = await getApplicationDocumentsDirectory();
-      final file = File(
-        '${dir.path}/transport_bill_${DateTime.now().millisecondsSinceEpoch}.pdf',
-      );
+      // Request storage permissions (required for Android 10+)
+      if (Platform.isAndroid) {
+        // Check & request storage permissions
+        var status = await Permission.storage.status;
+        if (!status.isGranted) {
+          status = await Permission.storage.request();
+        }
 
+        if (!status.isGranted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Storage permission denied')),
+          );
+          return;
+        }
+      }
+
+      // Get the public Downloads directory path
+      final String downloadsPath;
+      if (Platform.isAndroid) {
+        // Android: Use the public Downloads folder
+        downloadsPath = '/storage/emulated/0/Download';
+      } else {
+        // iOS: Use app's documents directory (fallback)
+        final dir = await getDownloadsDirectory();
+        downloadsPath = dir?.path ?? '';
+      }
+
+      // Create the directory if it doesn't exist
+      final Directory dir = Directory(downloadsPath);
+      if (!await dir.exists()) {
+        await dir.create(recursive: true);
+      }
+
+      // Generate unique filename with timestamp
+      final String filePath =
+          '${dir.path}/Transport_Bill_${DateTime.now().millisecondsSinceEpoch}.pdf';
+
+      // Download the file
       await _dio.download(
         pdfUrl,
-        file.path,
+        filePath,
         onReceiveProgress: (received, total) {
           if (total != -1) {
             print('${(received / total * 100).toStringAsFixed(0)}%');
@@ -75,11 +109,13 @@ class _SearchScreenState extends State<SearchScreen> {
         },
       );
 
+      // Show success message with path
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('PDF downloaded successfully')),
+        SnackBar(content: Text('PDF saved to Downloads: $filePath')),
       );
 
-      await OpenFile.open(file.path);
+      // Open the file
+      await OpenFile.open(filePath);
     } catch (e) {
       ScaffoldMessenger.of(
         context,

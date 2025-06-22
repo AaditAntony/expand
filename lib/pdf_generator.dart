@@ -186,7 +186,11 @@ Future<File> generateTransportBill({
                 _buildDetailRow('HIRE', formatWithCommas(hireCharge), '/-'),
                 _buildDetailRow('TOLL', formatWithCommas(tollCharge)),
                 _buildDetailRow('W. CHARGE', formatWithCommas(weighingCharge)),
-                _buildDetailRow('HALTING CHARGE', haltingCharge, '/-'),
+                _buildDetailRow(
+                  'HALTING CHARGE',
+                  formatWithCommas(haltingCharge),
+                  '/-',
+                ),
                 _buildDetailRow(
                   'ADVANCE',
                   formatWithCommas(advanceAmount),

@@ -52,7 +52,7 @@ class _PreviewScreenState extends State<PreviewScreen> {
   Future<void> _downloadPdf() async {
     setState(() => _isDownloading = true);
     try {
-      final dir = await getApplicationDocumentsDirectory();
+      final dir = Directory('/storage/emulated/0/Download');
       final file = File(
         '${dir.path}/transport_bill_${DateTime.now().millisecondsSinceEpoch}.pdf',
       );
