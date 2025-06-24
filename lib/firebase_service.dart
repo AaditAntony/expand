@@ -47,34 +47,45 @@ class FirebaseService {
     return _auth.currentUser;
   }
 
-  // Save transport bill to Firestore and upload PDF to Storage
   Future<String> saveTransportBill({
-    // Changed return type to String
     required Map<String, dynamic> billData,
     required File pdfFile,
   }) async {
     try {
-      // Check if user is authenticated
       if (_auth.currentUser == null) {
         throw Exception('User not authenticated');
       }
 
-      // Upload PDF to Storage with user-specific path
+      // Upload PDF to Storage
       final pdfRef = _storage.ref().child(
         'transport_bills/${_auth.currentUser!.uid}/${DateTime.now().millisecondsSinceEpoch}.pdf',
       );
       await pdfRef.putFile(pdfFile);
-      final pdfUrl = await pdfRef.getDownloadURL(); // Get the download URL
+      final pdfUrl = await pdfRef.getDownloadURL();
 
-      // Save data to Firestore with PDF URL and user ID
-      await _firestore.collection('transport_bills').add({
+      // Normalize the recipient name for searching
+      final recipientName = billData['recipientName'] as String;
+      final normalizedName =
+          recipientName
+              .toLowerCase()
+              .replaceAll(
+                RegExp(r'\s+'),
+                ' ',
+              ) // Replace multiple spaces with single space
+              .trim();
+
+      // Store both original and normalized versions
+      final updatedBillData = {
         ...billData,
+        'recipientName': recipientName, // original with proper case
+        'recipientNameSearch': normalizedName, // normalized for searching
         'pdfUrl': pdfUrl,
         'userId': _auth.currentUser!.uid,
         'createdAt': FieldValue.serverTimestamp(),
-      });
+      };
 
-      return pdfUrl; // Return the download URL
+      await _firestore.collection('transport_bills').add(updatedBillData);
+      return pdfUrl;
     } catch (e) {
       throw Exception('Failed to save bill: $e');
     }
@@ -85,19 +96,40 @@ class FirebaseService {
     String consigneeName,
   ) async {
     try {
-      // Check if user is authenticated
       if (_auth.currentUser == null) {
         throw Exception('User not authenticated');
       }
+
+      // Normalize the search term the same way we stored it
+      final normalizedSearch =
+          consigneeName.toLowerCase().replaceAll(RegExp(r'\s+'), ' ').trim();
+
+      // Create a search term that matches any part of the name
+      final searchTerm = normalizedSearch.replaceAll(
+        ' ',
+        '',
+      ); // Remove all spaces for broader matching
 
       final querySnapshot =
           await _firestore
               .collection('transport_bills')
               .where('userId', isEqualTo: _auth.currentUser!.uid)
-              .where('recipientName', isEqualTo: consigneeName)
+              .where('recipientNameSearch', isGreaterThanOrEqualTo: searchTerm)
+              .where(
+                'recipientNameSearch',
+                isLessThanOrEqualTo: '$searchTerm\uf8ff',
+              )
               .orderBy('createdAt', descending: true)
               .get();
-      return querySnapshot.docs;
+
+      // For more precise matching, you can filter client-side
+      final filteredResults =
+          querySnapshot.docs.where((doc) {
+            final storedName = doc['recipientNameSearch'] as String;
+            return storedName.contains(normalizedSearch);
+          }).toList();
+
+      return filteredResults;
     } catch (e) {
       throw Exception('Failed to search bills: $e');
     }

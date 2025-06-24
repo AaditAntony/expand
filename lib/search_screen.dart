@@ -35,17 +35,12 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   Future<void> _searchBills() async {
-    if (_searchController.text.isEmpty) return;
+    final searchTerm = _searchController.text.trim();
+    if (searchTerm.isEmpty) return;
 
     setState(() => _isLoading = true);
     try {
-      if (_auth.currentUser == null) {
-        throw Exception('User not authenticated');
-      }
-
-      final results = await _firebaseService.searchBillsByConsignee(
-        _searchController.text.trim(),
-      );
+      final results = await _firebaseService.searchBillsByConsignee(searchTerm);
       setState(() {
         _searchResults = results;
         _isLoading = false;
