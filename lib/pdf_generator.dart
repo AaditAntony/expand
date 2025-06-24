@@ -272,7 +272,10 @@ Future<File> generateTransportBill({
 }
 
 pw.TableRow _buildDetailRow(String label, String value, [String? symbol]) {
-  final showValue = value.trim().isNotEmpty;
+  final trimmedValue = value.trim();
+  final isZero = int.tryParse(trimmedValue.replaceAll(',', '')) == 0;
+  final showValue = trimmedValue.isNotEmpty && !isZero;
+
   return pw.TableRow(
     children: [
       pw.Padding(
@@ -284,7 +287,7 @@ pw.TableRow _buildDetailRow(String label, String value, [String? symbol]) {
       ),
       pw.Padding(
         padding: const pw.EdgeInsets.all(8),
-        child: pw.Text(showValue ? value + (symbol ?? '') : ''),
+        child: pw.Text(showValue ? trimmedValue + (symbol ?? '') : ''),
       ),
     ],
   );
