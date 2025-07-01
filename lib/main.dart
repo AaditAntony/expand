@@ -355,7 +355,7 @@ class _TransportBillFormState extends State<TransportBillForm> {
         // Clear the form after returning from PreviewScreen
         _formKey.currentState?.reset();
         _invoiceController.clear();
-        _dateController.text = DateFormat('dd/MM/yyyy').format(DateTime.now());
+        _dateController.clear();
         _truckController.clear();
         _recipientController.clear();
         _containerController.clear();
