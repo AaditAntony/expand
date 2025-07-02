@@ -42,6 +42,9 @@ class AuthWrapper extends StatelessWidget {
         if (snapshot.connectionState == ConnectionState.active) {
           final user = snapshot.data;
           if (user != null) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              FirebaseService().migrateExistingData();
+            });
             return const TransportBillForm();
           }
           return const LoginScreen();

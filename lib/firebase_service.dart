@@ -134,4 +134,30 @@ class FirebaseService {
       throw Exception('Failed to search bills: $e');
     }
   }
+
+  // Add this to your FirebaseService class
+  Future<void> migrateExistingData() async {
+    final user = _auth.currentUser;
+    if (user == null) return;
+
+    final query =
+        await _firestore
+            .collection('transport_bills')
+            .where('userId', isEqualTo: user.uid)
+            .get();
+
+    final batch = _firestore.batch();
+
+    for (final doc in query.docs) {
+      if (!doc.data().containsKey('recipientNameSearch')) {
+        final recipientName = doc['recipientName'] as String;
+        final normalizedName =
+            recipientName.toLowerCase().replaceAll(RegExp(r'\s+'), ' ').trim();
+
+        batch.update(doc.reference, {'recipientNameSearch': normalizedName});
+      }
+    }
+
+    await batch.commit();
+  }
 }
