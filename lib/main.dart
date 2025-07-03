@@ -1,3 +1,4 @@
+import 'package:expand/CounterPreference.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -112,6 +113,22 @@ class _TransportBillFormState extends State<TransportBillForm> {
   void initState() {
     super.initState();
     // _dateController.text = DateFormat('dd/MM/yyyy').format(DateTime.now());
+    _loadCounter();
+  }
+
+  Future<void> _loadCounter() async {
+    int savedCounter = await Counterpreference.getCounter();
+    setState(() {
+      _invoiceController.text = savedCounter.toString();
+    });
+  }
+
+  Future<void> _setCounter() async {
+    await Counterpreference.setCounter(int.parse(_invoiceController.text));
+  }
+
+  Future<void> _incrementCounter() async {
+    await Counterpreference.incrementCounter();
   }
 
   @override
@@ -162,6 +179,7 @@ class _TransportBillFormState extends State<TransportBillForm> {
                 _invoiceController,
                 'SL.No',
                 isRequired: true,
+                toSetBillNumber: true,
               ),
               _buildTextFormField(_dateController, 'Date', isReadOnly: false),
               _buildTextFormField(
@@ -246,6 +264,7 @@ class _TransportBillFormState extends State<TransportBillForm> {
     bool isRequired = false,
     bool isNumber = false,
     bool isReadOnly = false,
+    bool toSetBillNumber = false,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -254,9 +273,19 @@ class _TransportBillFormState extends State<TransportBillForm> {
         decoration: InputDecoration(
           labelText: label,
           border: const OutlineInputBorder(),
+          suffixIcon:
+              toSetBillNumber
+                  ? IconButton(
+                    onPressed: () {
+                      _setCounter();
+                    },
+                    icon: Icon(Icons.change_circle),
+                  )
+                  : null,
         ),
         keyboardType: isNumber ? TextInputType.number : TextInputType.text,
         readOnly: isReadOnly,
+
         validator:
             isRequired
                 ? (value) => value?.isEmpty ?? true ? 'Required field' : null
@@ -343,7 +372,8 @@ class _TransportBillFormState extends State<TransportBillForm> {
           billData: billData,
           pdfFile: pdfFile,
         );
-
+        await _incrementCounter();
+        _loadCounter();
         // Check if widget is still mounted before navigation
         if (!mounted) return;
 
@@ -355,9 +385,10 @@ class _TransportBillFormState extends State<TransportBillForm> {
                 (context) => PreviewScreen(pdfFile: pdfFile, pdfUrl: pdfUrl),
           ),
         );
+
         // Clear the form after returning from PreviewScreen
         _formKey.currentState?.reset();
-        _invoiceController.clear();
+        // _invoiceController.clear();
         _dateController.clear();
         _truckController.clear();
         _recipientController.clear();
