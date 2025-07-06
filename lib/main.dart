@@ -1,4 +1,4 @@
-import 'package:expand/CounterPreference.dart';
+import 'package:expand/counter_preference.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:firebase_core/firebase_core.dart';
