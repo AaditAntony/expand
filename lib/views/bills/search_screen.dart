@@ -1,36 +1,26 @@
-import 'dart:io';
-
-import 'package:expand/firebase_service.dart';
+import 'package:expand/viewmodels/auth_viewmodel.dart';
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../models/bill_model.dart';
+import '../../viewmodels/search_viewmodel.dart';
 
-import 'package:firebase_auth/firebase_auth.dart';
-
-import 'package:dio/dio.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:open_file/open_file.dart';
-import 'package:permission_handler/permission_handler.dart';
-
-class SearchScreen extends StatefulWidget {
+class SearchScreen extends ConsumerStatefulWidget {
   const SearchScreen({super.key});
 
   @override
-  State<SearchScreen> createState() => _SearchScreenState();
+  ConsumerState<SearchScreen> createState() => _SearchScreenState();
 }
 
-class _SearchScreenState extends State<SearchScreen> {
+class _SearchScreenState extends ConsumerState<SearchScreen> {
   final TextEditingController _searchController = TextEditingController();
-  final FirebaseService _firebaseService = FirebaseService();
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  final Dio _dio = Dio();
-  List<QueryDocumentSnapshot> _searchResults = [];
+  List<Bill> _searchResults = [];
   bool _isLoading = false;
   bool _isDownloading = false;
 
   @override
   void dispose() {
     _searchController.dispose();
-    _dio.close();
+    // ref.read(searchViewModelProvider).dispose();
     super.dispose();
   }
 
@@ -40,7 +30,9 @@ class _SearchScreenState extends State<SearchScreen> {
 
     setState(() => _isLoading = true);
     try {
-      final results = await _firebaseService.searchBillsByConsignee(searchTerm);
+      final results = await ref
+          .read(searchViewModelProvider)
+          .searchBills(searchTerm);
       setState(() {
         _searchResults = results;
         _isLoading = false;
@@ -53,75 +45,10 @@ class _SearchScreenState extends State<SearchScreen> {
     }
   }
 
-  Future<void> _downloadAndOpenPdf(String pdfUrl) async {
-    setState(() => _isDownloading = true);
-    try {
-      // Request storage permissions (required for Android 10+)
-      if (Platform.isAndroid) {
-        // Check & request storage permissions
-        var status = await Permission.storage.status;
-        if (!status.isGranted) {
-          status = await Permission.storage.request();
-        }
-
-        if (!status.isGranted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Storage permission denied')),
-          );
-          return;
-        }
-      }
-
-      // Get the public Downloads directory path
-      final String downloadsPath;
-      if (Platform.isAndroid) {
-        // Android: Use the public Downloads folder
-        downloadsPath = '/storage/emulated/0/Download';
-      } else {
-        // iOS: Use app's documents directory (fallback)
-        final dir = await getDownloadsDirectory();
-        downloadsPath = dir?.path ?? '';
-      }
-
-      // Create the directory if it doesn't exist
-      final Directory dir = Directory(downloadsPath);
-      if (!await dir.exists()) {
-        await dir.create(recursive: true);
-      }
-
-      // Generate unique filename with timestamp
-      final String filePath =
-          '${dir.path}/Transport_Bill_${DateTime.now().millisecondsSinceEpoch}.pdf';
-
-      // Download the file
-      await _dio.download(
-        pdfUrl,
-        filePath,
-        onReceiveProgress: (received, total) {
-          if (total != -1) {
-            // print('${(received / total * 100).toStringAsFixed(0)}%');
-          }
-        },
-      );
-
-      // Show success message with path
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('PDF saved to Downloads: $filePath')),
-      );
-
-      // Open the file
-      await OpenFile.open(filePath);
-    } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Download failed: $e')));
-    } finally {
-      setState(() => _isDownloading = false);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
+    final searchViewModel = ref.read(searchViewModelProvider);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Search Bills'),
@@ -129,7 +56,7 @@ class _SearchScreenState extends State<SearchScreen> {
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () async {
-              await _firebaseService.signOut();
+              await ref.read(authViewModelProvider).signOut();
               Navigator.pushReplacementNamed(context, '/');
             },
           ),
@@ -159,23 +86,22 @@ class _SearchScreenState extends State<SearchScreen> {
                   child: ListView.builder(
                     itemCount: _searchResults.length,
                     itemBuilder: (context, index) {
-                      final bill =
-                          _searchResults[index].data() as Map<String, dynamic>;
+                      final bill = _searchResults[index];
                       return Card(
                         margin: const EdgeInsets.only(bottom: 10),
                         child: ListTile(
-                          title: Text(bill['recipientName']),
+                          title: Text(bill.recipientName),
                           subtitle: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('Invoice: ${bill['invoiceNumber']}'),
-                              Text('Truck: ${bill['truckNumber']}'),
-                              Text('Date: ${bill['date']}'),
-                              if (bill['advanceAmount'] != null &&
-                                  bill['advanceAmount'] != 0 &&
-                                  bill['advanceAmount'].toString().isNotEmpty)
-                                Text('Advance: ₹${bill['advanceAmount']}'),
-                              Text('Total: ₹${bill['totalAmount']}'),
+                              Text('Invoice: ${bill.invoiceNumber}'),
+                              Text('Truck: ${bill.truckNumber}'),
+                              Text('Date: ${bill.date}'),
+                              if (bill.advanceAmount != null &&
+                                  bill.advanceAmount != '0' &&
+                                  bill.advanceAmount.isNotEmpty)
+                                Text('Advance: ₹${bill.advanceAmount}'),
+                              Text('Total: ₹${bill.totalAmount}'),
                             ],
                           ),
                           trailing:
@@ -183,9 +109,21 @@ class _SearchScreenState extends State<SearchScreen> {
                                   ? const CircularProgressIndicator()
                                   : IconButton(
                                     icon: const Icon(Icons.download),
-                                    onPressed:
-                                        () =>
-                                            _downloadAndOpenPdf(bill['pdfUrl']),
+                                    onPressed: () async {
+                                      setState(() => _isDownloading = true);
+                                      try {
+                                        await searchViewModel
+                                            .downloadAndOpenPdf(bill.pdfUrl);
+                                      } catch (e) {
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          SnackBar(content: Text('Error: $e')),
+                                        );
+                                      } finally {
+                                        setState(() => _isDownloading = false);
+                                      }
+                                    },
                                   ),
                           onTap: () {
                             showDialog(
@@ -200,36 +138,36 @@ class _SearchScreenState extends State<SearchScreen> {
                                         children: [
                                           _buildDetailRow(
                                             'Invoice Number',
-                                            bill['invoiceNumber'],
+                                            bill.invoiceNumber,
                                           ),
-                                          _buildDetailRow('Date', bill['date']),
+                                          _buildDetailRow('Date', bill.date),
                                           _buildDetailRow(
                                             'Truck Number',
-                                            bill['truckNumber'],
+                                            bill.truckNumber,
                                           ),
                                           _buildDetailRow(
                                             'Container',
-                                            bill['containerNumber'],
+                                            bill.containerNumber,
                                           ),
                                           _buildDetailRow(
                                             'Destination',
-                                            bill['destination'],
+                                            bill.destination,
                                           ),
                                           _buildDetailRow(
                                             'Hire Charge',
-                                            '₹${bill['hireCharge']}',
+                                            '₹${bill.hireCharge}',
                                           ),
                                           _buildDetailRow(
                                             'Toll Charge',
-                                            '₹${bill['tollCharge']}',
+                                            '₹${bill.tollCharge}',
                                           ),
                                           _buildDetailRow(
                                             "Advanced Amount",
-                                            '₹${bill['advanceAmount']}',
+                                            '₹${bill.advanceAmount}',
                                           ),
                                           _buildDetailRow(
                                             'Total Amount',
-                                            '₹${bill['totalAmount']}',
+                                            '₹${bill.totalAmount}',
                                           ),
                                         ],
                                       ),
